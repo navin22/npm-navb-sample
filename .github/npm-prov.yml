@@ -1,0 +1,49 @@
+name: npm-demo
+on: [push, workflow_dispatch]
+
+jobs:
+  run-demo:
+    runs-on: ubuntu-hosted
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+      - name: Setup node
+        uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93 # v3
+        with:
+          node-version: 16
+      - name: Clone npm
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+        with:
+          repository: bdehamer/cli
+          ref: bdehamer/provenance
+          path: npm
+      - name: Build npm
+        run: |
+          cd npm
+          node . link
+          cd ..
+          npm version
+      - name: Bump package versions
+        run: |
+          sed -i "s/alpha.0/alpha.${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/" package.json
+      - name: Publish package
+        env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm publish --provenance
+      - name: Retrieve bundle from TMA
+        run: |
+          ./npm-verify > bundle.sigstore
+          echo "##################################################################################### Sigstore Bundle"
+          cat bundle.sigstore | jq .
+          echo
+          echo
+          echo "##################################################################################### Provenance"
+          cat bundle.sigstore | jq -r ".attestation.payload" | base64 -d | jq .
+          echo
+          echo
+          echo "##################################################################################### Signing Certificate"
+          cat bundle.sigstore | jq -r ".certificate" | base64 -d | openssl x509 -text
