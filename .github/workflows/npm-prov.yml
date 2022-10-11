@@ -20,10 +20,9 @@ jobs:
           repository: bdehamer/cli
           ref: bdehamer/provenance
           path: npm
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Build npm
-        with: 
-          registry-url: 'https://registry.npmjs.org'
         run: |
           cd npm
           node . link
