@@ -31,7 +31,7 @@ jobs:
           sed -i "s/alpha.0/alpha.${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/" package.json
       - name: Publish package
         env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --provenance
       - name: Retrieve bundle from TMA
