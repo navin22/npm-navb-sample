@@ -20,7 +20,10 @@ jobs:
           repository: bdehamer/cli
           ref: bdehamer/provenance
           path: npm
+
       - name: Build npm
+        with: 
+          registry-url: 'https://registry.npmjs.org'
         run: |
           cd npm
           node . link
@@ -32,6 +35,7 @@ jobs:
       - name: Publish package
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --provenance
       - name: Retrieve bundle from TMA
